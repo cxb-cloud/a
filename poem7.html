@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Loading + Echo Audio + Animation</title>
+<style>
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: monospace;
+        color: white;
+    }
+
+    #loading {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: black;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        letter-spacing: 4px;
+        animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.3; }
+        50% { opacity: 1; }
+        100% { opacity: 0.3; }
+    }
+
+    #container {
+        display: none;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        white-space: pre;
+        font-size: 20px;
+        line-height: 1.5em;
+    }
+
+    .line {
+        background: black;
+        color: white;
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+</style>
+</head>
+<body>
+
+<div id="loading">LOADING...</div>
+<div id="container"></div>
+
+<audio id="audio" src="audio/yourfile.mp3"></audio>
+
+<script>
+// ---------------- AUDIO WITH ECHO EFFECT ----------------
+const audio = document.getElementById("audio");
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const source = audioCtx.createMediaElementSource(audio);
+
+// Echo nodes
+const delay = audioCtx.createDelay();
+delay.delayTime.value = 0.28;
+
+const feedback = audioCtx.createGain();
+feedback.gain.value = 0.45;
+
+const wet = audioCtx.createGain();
+wet.gain.value = 0.6;
+
+source.connect(delay);
+delay.connect(feedback);
+feedback.connect(delay);
+delay.connect(wet);
+wet.connect(audioCtx.destination);
+
+source.connect(audioCtx.destination);
+
+// ---------------- POEM ANIMATION ----------------
+const lines = [
+    "here   is   a   body   still   breathing   as   if   electrified",
+    "we   say   it   smells   like   pine,   like   perfume",
+    "I’m   not   really   sure   what   you   smell   like",
+    "you   smell   pleasant   and   unforgettable",
+    "I   show   you   how   I   know   all   this",
+    "nose   sealed   like   an   animal",
+    "later   I   want   you   to   smell   like   not‑perfume",
+    "pine,   perfume,   alcohol",
+    "you’re   not   cheap   either,   right",
+    "blue   curaçao,   coconut   rum",
+    "(all   the   things   I   picked   up   while   searching   your   name)",
+    "your   name   your   name   your   name   your   body   your   body",
+    "here   is   a   body", "here   is   a   body", "here   is   a   body",
+    "now   there   are   two   people   on   the   branch   outside",
+    "white   rose", "ironically",
+    "these   two   people   sitting   on   the   branch   outside",
+    "grew   white   roses", "you   might   remember",
+    "now   there   are   two   people   on   the   branch",
+    "yes,   sir", "all   desire", "yes,   sir",
+    "I   think   you’re   lovely",
+    "all   desire", "sir",
+    "like   white   rose   white   rose   white   rose",
+    "and   blue   curaçao",
+    "white   rose   white   rose   white   rose",
+    "blue   curaçao",
+    "white   rose   white   rose   white   rose   white   rose   white   rose   white   rose",
+    "(a   translation   of   a   cool   political   text)"
+];
+
+function startAnimation() {
+    const loading = document.getElementById("loading");
+    const container = document.getElementById("container");
+
+    loading.style.display = "none";
+    container.style.display = "block";
+
+    let i = 0;
+
+    function showLine() {
+        if (i >= lines.length) {
+            setTimeout(startAnimation, 800);
+            return;
+        }
+
+        const line = lines[i];
+        const wobble = " ".repeat(Math.floor(Math.random() * 4));
+        const spaced = line.split("").join(wobble);
+
+        let drift = Math.floor(20 + 18 * Math.sin(i * 0.45) + (i > 12 ? i / 4 : 0));
+
+        const div = document.createElement("div");
+        div.className = "line";
+        div.style.marginLeft = drift + "px";
+        div.textContent = spaced;
+
+        container.appendChild(div);
+
+        requestAnimationFrame(() => {
+            div.style.opacity = 1;
+            div.style.transform = "translateY(0px)";
+        });
+
+        i++;
+        setTimeout(showLine, 160);
+    }
+
+    showLine();
+}
+
+// ---------------- LOADING SCREEN ----------------
+setTimeout(() => {
+    audio.play();
+    audioCtx.resume();
+    startAnimation();
+}, 2500); // loading duration
+</script>
+
+</body>
+</html>

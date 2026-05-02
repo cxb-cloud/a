@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Drunk Spiral Poem</title>
+<style>
+    body {
+        background: white;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: monospace;
+    }
+
+    #container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        white-space: pre;
+        font-size: 20px;
+        line-height: 1.4em;
+    }
+
+    .line {
+        color: white;
+        background: black;
+        display: inline-block;
+        padding: 2px 6px;
+    }
+</style>
+</head>
+<body>
+
+<div id="container"></div>
+
+<script>
+const lines = [
+    "here is a body still breathing as if electrified",
+    "we say it smells like pine, like perfume",
+    "I’m not really sure what you smell like",
+    "you smell pleasant and unforgettable, girl",
+    "I show you how I know all this",
+    "nose sealed like an animal",
+    "later I want you to smell like not-perfume",
+    "pine, perfume, alcohol",
+    "you’re not cheap either, right? right?",
+    "blue curaçao, coconut rum",
+    "(all the things I picked up while googling your name…)",
+    "your name your name your name your body your body",
+    "here is a body", "here is a body", "here is a body",
+    "now there are two people on the branch outside",
+    "white rose", "ironically",
+    "these two people sitting on the branch outside",
+    "grew white roses", "you might remember",
+    "now there are two people on the branch",
+    "yes, sir", "all desire", "yes, sir",
+    "I think you’re sexy, my little sweet vodka cocktail",
+    "all desire", "sir",
+    "like white rose white rose white rose",
+    "and blue curaçao",
+    "white rose white rose white rose",
+    "blue curaçao",
+    "white rose white rose white rose white rose white rose white rose",
+    "(a translation of a “great cool political text”)"
+];
+
+function animate() {
+    const container = document.getElementById("container");
+    container.innerHTML = ""; // clear screen at start of each loop
+
+    let i = 0;
+
+    function showLine() {
+        if (i >= lines.length) {
+            // restart after short pause
+            setTimeout(animate, 600);
+            return;
+        }
+
+        const line = lines[i];
+
+        // Stretch factor
+        const stretch = Math.floor(i / 6);
+        const stretched = line.split("").join(" ".repeat(stretch));
+
+        // Spiral indent
+        let indent = Math.floor(20 + 15 * Math.sin(i * 0.5));
+        if (i > 15) indent += Math.floor(i / 5);
+
+        const div = document.createElement("div");
+        div.className = "line";
+        div.style.marginLeft = indent + "px";
+        div.textContent = stretched;
+
+        container.appendChild(div);
+
+        i++;
+        setTimeout(showLine, 180); // quick pacing
+    }
+
+    showLine();
+}
+
+animate();
+</script>
+
+</body>
+</html>

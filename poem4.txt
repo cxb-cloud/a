@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE TOWN WITH NO MOTELS</title>
+    
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #d1d1d1;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .terminal-container {
+            width: 100%;
+            max-width: 700px;
+            background: #050505;
+            border: 1px solid #222;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.05); /* Very faint red glow */
+            border-radius: 2px;
+        }
+
+        #output {
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 14px;
+            border-bottom: 1px solid #111;
+            padding-bottom: 20px;
+        }
+
+        /* The Goth Navigation */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 180px;
+            margin: 0 auto;
+        }
+
+        button {
+            background: #000;
+            color: #666;
+            border: 1px solid #333;
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            color: #fff;
+            border-color: #eee;
+            background: #111;
+        }
+
+        .btn-n { grid-column: 2; }
+        .btn-w { grid-column: 1; }
+        .btn-e { grid-column: 3; }
+        .btn-s { grid-column: 2; }
+
+        .status-bar {
+            margin-top: 20px;
+            font-size: 10px;
+            color: #333;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Scrollbar styling */
+        #output::-webkit-scrollbar { width: 4px; }
+        #output::-webkit-scrollbar-track { background: #000; }
+        #output::-webkit-scrollbar-thumb { background: #222; }
+    </style>
+</head>
+<body>
+
+    <div class="terminal-container">
+        <div id="output">Initializing...</div>
+
+        <div class="nav-grid">
+            <button class="btn-n" py-click='move("north")'>NORTH</button>
+            <button class="btn-w" py-click='move("west")'>WEST</button>
+            <button class="btn-e" py-click='move("east")'>EAST</button>
+            <button class="btn-s" py-click='move("south")'>SOUTH</button>
+        </div>
+
+        <div class="status-bar">
+            No Motels // No Hotels // No Agencies
+        </div>
+    </div>
+
+    <script type="py">
+        import random
+        from pyscript import document
+
+        # --- DATA ---
+        PLACES = [
+            "the empty lot with no motel",
+            "I’m only making you do it — it’s exactly what you wants",
+            "the wind corridor",
+            "the autoclave room",
+            "don’t say that. don’t open your mouth",
+            "the smoke-layered roof edge",
+            "the dog’s ‘humanized moan’\naegoo aagoo aahfogoo\naggegoogo aggogoo agogosoooo",
+            "the industrial field of soft black plants",
+            "the canyon of metal fragments",
+            "can you shut the fuck up"
+        ]
+
+        DESCRIPTIONS = [
+            "you open my mouth, then “sell-speak” through me",
+            "Rectangles repeat themselves in quiet patterns.",
+            "A soft mechanical hum drifts through the air.",
+            "I’m afraid of being left.",
+            "“I really hate women,” you chant, and you mean it",
+            "The wind carries small particles that shimmer briefly.",
+            "praying.",
+            "The ground feels like a document someone forgot to finish.",
+            "that’s what you want.",
+            "You feel watched, but only by the architecture."
+        ]
+
+        EVENTS = [
+            "A rectangle shifts slightly, then stops.",
+            "A distant machine coughs and resets.",
+            "A soft pulse of light moves across the ground.",
+            "Something overhead flickers, then resolves into nothing.",
+            "A drifting piece of dust seems to follow you.",
+            "A pattern repeats, then repeats differently.",
+            "A quiet tone rises, then dissolves.",
+            "The air thickens, then clears.",
+            "A structure rearranges itself when you look away."
+        ]
+
+        # --- SETUP ---
+        size = 5
+        town = {}
+        for x in range(size):
+            for y in range(size):
+                town[(x, y)] = {
+                    "place": random.choice(PLACES),
+                    "description": random.choice(DESCRIPTIONS)
+                }
+
+        p_x = 2
+        p_y = 2
+        history = []
+
+        def log(text):
+            history.append(text)
+            if len(history) > 10: history.pop(0) # Keep terminal clean
+            document.querySelector("#output").innerText = "\n\n".join(history)
+            # Auto-scroll
+            out_div = document.querySelector("#output")
+            out_div.scrollTop = out_div.scrollHeight
+
+        def describe_location():
+            loc = town[(p_x, p_y)]
+            msg = f"You arrive at {loc['place']}.\n{loc['description']}\n{random.choice(EVENTS)}"
+            log(msg)
+
+        def move(direction):
+            global p_x, p_y
+            dx, dy = 0, 0
+            if direction == "north": dy = -1
+            elif direction == "south": dy = 1
+            elif direction == "east": dx = 1
+            elif direction == "west": dx = -1
+
+            nx, ny = p_x + dx, p_y + dy
+
+            if (nx, ny) in town:
+                p_x, p_y = nx, ny
+                describe_location()
+            else:
+                log("The land becomes abstract and refuses to let you pass.")
+
+        # INITIAL START
+        history.append("You enter a town with no motels, no hotels, no agencies.\nA place that feels translated from a language that never fully existed.")
+        describe_location()
+    </script>
+
+</body>
+</html>

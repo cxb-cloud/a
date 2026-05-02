@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Endless Spiral Poem</title>
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    overflow: hidden;
+    font-family: "Courier New", monospace;
+  }
+
+  .line {
+    position: absolute;
+    white-space: pre;
+    pointer-events: none;
+    transform-origin: left center;
+    color: #f2f2f2;
+    opacity: 0;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
+    transition: opacity 1.2s ease;
+  }
+</style>
+</head>
+<body>
+
+<script>
+const lines = [
+  "here is a body still breathing as if electrified",
+  "we say it smells like pine, like perfume",
+  "I’m not really sure what you smell like",
+  "you smell pleasant and unforgettable",
+  "I show you how I know all this",
+  "nose sealed like an animal",
+  "later I want you to smell like not-perfume",
+  "pine, perfume, alcohol",
+  "you’re not cheap either, right?",
+  "(all the things I picked up while searching your name…)",
+  "your name your name your name your body your body",
+  "here is a body", "here is a body", "here is a body",
+  "now there are two people on the branch outside",
+  "white rose", "ironically",
+  "these two people sitting on the branch outside",
+  "grew white roses", "you might remember",
+  "now there are two people on the branch",
+  "yes", "all desire", "yes",
+  "I think you’re lovely, my little sweet cocktail",
+  "all desire", "sir",
+  "like white rose white rose white rose",
+  "and blue",
+  "white rose white rose white rose",
+  "blue",
+  "white rose white rose white rose white rose white rose white rose",
+  "(a translation of a “great cool political text”)"
+];
+
+let lineElements = [];
+let t = 0;
+
+function createSpiral() {
+  lineElements.forEach(el => el.remove());
+  lineElements = [];
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  const baseRadius = Math.min(window.innerWidth, window.innerHeight) * 0.03;
+  const radiusStep = Math.min(window.innerWidth, window.innerHeight) * 0.025;
+
+  lines.forEach((line, i) => {
+    const el = document.createElement("div");
+    el.className = "line";
+
+    const stretch = Math.floor(i / 6);
+    const stretched = line.split("").join(" ".repeat(stretch));
+    el.textContent = stretched;
+
+    document.body.appendChild(el);
+
+    lineElements.push({
+      el,
+      i,
+      baseRadius,
+      radiusStep
+    });
+
+    setTimeout(() => {
+      el.style.opacity = 1;
+    }, i * 200);
+  });
+}
+
+function animate() {
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  lineElements.forEach(({ el, i, baseRadius, radiusStep }) => {
+    // Spiral that expands and collapses over time
+    const pulse = Math.sin(t * 0.0015 + i * 0.2) * 40;
+
+    // Angle keeps increasing → continuous spiraling
+    const angle = i * 0.55 + t * 0.002;
+
+    // Radius shifts over time → spiral folds over itself
+    const radius = baseRadius + i * radiusStep + pulse;
+
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+
+    // Gentle wobble
+    const wobble = Math.sin(t * 0.003 + i) * 6;
+
+    // Breathing scale
+    const scale = 0.7 + i * 0.02 + Math.sin(t * 0.001 + i) * 0.04;
+
+    el.style.transform =
+      `translate(${x + wobble}px, ${y + wobble}px)
+       rotate(${angle * 40}deg)
+       scale(${scale})`;
+  });
+
+  t++;
+  requestAnimationFrame(animate);
+}
+
+createSpiral();
+animate();
+
+window.addEventListener("resize", createSpiral);
+</script>
+
+</body>
+</html>

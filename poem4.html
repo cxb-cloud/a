@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Strange Town</title>
+
+    <!-- PyScript -->
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+    <style>
+        body {
+            background: #111;
+            color: #eee;
+            font-family: monospace;
+            padding: 20px;
+        }
+        #output {
+            white-space: pre-wrap;
+            border: 1px solid #444;
+            padding: 15px;
+            height: 60vh;
+            overflow-y: auto;
+            background: #000;
+        }
+        input {
+            width: 300px;
+            padding: 8px;
+            background: #222;
+            color: #eee;
+            border: 1px solid #555;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Strange Town</h2>
+
+<div id="output"></div>
+
+<br>
+<input id="cmd" placeholder="Type a command (north/south/east/west/quit)">
+<pyscript>
+import random
+from js import document
+
+# --- TOWN DATA -------------------------------------------------------------
+
+PLACES = [
+    "the empty lot with no motel",
+    "I’m only making you do it — it’s exactly what you want",
+    "the wind corridor",
+    "the autoclave room",
+    "don’t say that. don’t open your mouth",
+    "the smoke-layered roof edge",
+    "the dog’s ‘humanized moan’ aegoo aagoo aahfogoo aggegoogo aggogoo agogosoooo",
+    "the industrial field of soft black plants",
+    "the canyon of metal fragments",
+    "can you shut the fuck up"
+]
+
+DESCRIPTIONS = [
+    "you open my mouth, then “sell-speak” through me",
+    "Rectangles repeat themselves in quiet patterns.",
+    "A soft mechanical hum drifts through the air.",
+    "I’m afraid of being left.",
+    "“I really hate women,” you chant, and you mean it",
+    "The wind carries small particles that shimmer briefly.",
+    "praying.",
+    "The ground feels like a document someone forgot to finish.",
+    "that’s what you want.",
+    "You feel watched, but only by the architecture."
+]
+
+EVENTS = [
+    "A rectangle shifts slightly, then stops.",
+    "A distant machine coughs and resets.",
+    "A soft pulse of light moves across the ground.",
+    "Something overhead flickers, then resolves into nothing.",
+    "A drifting piece of dust seems to follow you.",
+    "A pattern repeats, then repeats differently.",
+    "A quiet tone rises, then dissolves.",
+    "The air thickens, then clears.",
+    "A structure rearranges itself when you look away."
+]
+
+# --- WORLD SETUP -----------------------------------------------------------
+
+town = {}
+size = 5  # 5x5 grid
+
+for x in range(size):
+    for y in range(size):
+        town[(x, y)] = {
+            "place": random.choice(PLACES),
+            "description": random.choice(DESCRIPTIONS)
+        }
+
+player_x = size // 2
+player_y = size // 2
+
+# --- OUTPUT HANDLER --------------------------------------------------------
+
+def write(text):
+    out = document.getElementById("output")
+    out.innerText += text + "\n"
+    out.scrollTop = out.scrollHeight
+
+# --- GAME LOGIC ------------------------------------------------------------
+
+def describe_location():
+    loc = town[(player_x, player_y)]
+    write(f"\nYou arrive at {loc['place']}")
+    write(loc["description"])
+    write(random.choice(EVENTS))
+
+def move(direction):
+    global player_x, player_y
+    dx, dy = 0, 0
+
+    if direction == "north":
+        dy = -1
+    elif direction == "south":
+        dy = 1
+    elif direction == "east":
+        dx = 1
+    elif direction == "west":
+        dx = -1
+
+    new_x = player_x + dx
+    new_y = player_y + dy
+
+    if (new_x, new_y) in town:
+        player_x, player_y = new_x, new_y
+        describe_location()
+    else:
+        write("\nYou walk toward the edge of the town.")
+        write("The land becomes abstract and refuses to let you pass.")
+
+# --- INITIAL TEXT ----------------------------------------------------------
+
+write("You enter a town with no motels, no hotels, no agencies.")
+write("A place that feels translated from a language that never fully existed.")
+describe_location()
+
+# --- COMMAND HANDLER -------------------------------------------------------
+
+def handle_command(event):
+    cmd = document.getElementById("cmd").value.strip().lower()
+    document.getElementById("cmd").value = ""
+
+    if cmd == "quit":
+        write("\nYou step out of the town. It folds itself behind you.")
+    elif cmd in ["north", "south", "east", "west"]:
+        move(cmd)
+    else:
+        write("The town does not understand that action.")
+
+document.getElementById("cmd").addEventListener("keydown", lambda e: handle_command(e) if e.key == "Enter" else None)
+</pyscript>
+
+</body>
+</html>

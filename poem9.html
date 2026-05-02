@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Roses</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'serif';
+            height: 100vh;
+            cursor: pointer;
+        }
+
+        .rose {
+            position: absolute;
+            white-space: nowrap;
+            pointer-events: none;
+            text-transform: lowercase;
+            animation: fadeInOut 4s linear forwards;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: scale(0.5); }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; transform: scale(1.2); }
+        }
+
+        #overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">Click to begin the cycle</div>
+
+    <script>
+        const overlay = document.getElementById('overlay');
+        let audioStarted = false;
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Function to create a random synth note (The Dice Roll)
+        function playRandomNote() {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            // Completely random frequency "roll of the dice"
+            const freq = Math.random() * (800 - 100) + 100;
+            osc.type = ['sine', 'triangle', 'sawtooth'][Math.floor(Math.random() * 3)];
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            
+            gain.gain.setValueAtTime(0, ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 2);
+        }
+
+        // Function for Text-to-Speech
+        function speak() {
+            const utterance = new SpeechSynthesisUtterance("white rose");
+            utterance.rate = Math.random() * (1.2 - 0.7) + 0.7; // Variable speed
+            utterance.pitch = Math.random() * (1.5 - 0.5) + 0.5; // Variable pitch
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function createRose() {
+            const rose = document.createElement('div');
+            rose.className = 'rose';
+            rose.innerText = 'white rose';
+            
+            // Random positioning
+            rose.style.left = Math.random() * 80 + 10 + '%';
+            rose.style.top = Math.random() * 80 + 10 + '%';
+            
+            // Random stretching and size
+            const fontSize = Math.random() * (40 - 14) + 14;
+            const letterSpacing = Math.random() * 15;
+            rose.style.fontSize = fontSize + 'px';
+            rose.style.letterSpacing = letterSpacing + 'px';
+            
+            document.body.appendChild(rose);
+            
+            // Audio triggers
+            speak();
+            playRandomNote();
+
+            // Cleanup DOM
+            setTimeout(() => rose.remove(), 4000);
+
+            // Set next random interval (between 0 and 4 seconds)
+            const nextInterval = Math.random() * 4000;
+            setTimeout(createRose, nextInterval);
+        }
+
+        // Initialize on first click
+        window.addEventListener('click', () => {
+            if (!audioStarted) {
+                audioStarted = true;
+                overlay.style.display = 'none';
+                ctx.resume();
+                createRose();
+            }
+        });
+    </script>
+</body>
+</html>

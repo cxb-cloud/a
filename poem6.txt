@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Strange Town</title>
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    color: #e6e6e6;
+    font-family: "Courier New", monospace;
+  }
+
+  #output {
+    padding: 20px;
+    height: 80vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.5;
+  }
+
+  #input-area {
+    padding: 10px;
+    border-top: 1px solid #333;
+  }
+
+  input {
+    width: 98%;
+    padding: 10px;
+    background: #111;
+    border: 1px solid #444;
+    color: #eee;
+    font-family: inherit;
+    font-size: 16px;
+  }
+
+  .spitty {
+    opacity: 0;
+    display: inline-block;
+    animation: spit 0.4s forwards;
+  }
+
+  @keyframes spit {
+    0%   { opacity: 0; transform: translateY(3px) scale(0.95); filter: blur(3px); }
+    40%  { opacity: 1; transform: translateY(-1px) scale(1.03); filter: blur(0px); }
+    100% { opacity: 1; transform: translateY(0px) scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div id="output"></div>
+
+<div id="input-area">
+  <input id="command" placeholder="Type a direction (north/south/east/west) or 'quit'">
+</div>
+
+<script>
+const PLACES = [
+  "the empty lot with no motel",
+  "the wind corridor",
+  "the autoclave room",
+  "the smoke-layered roof edge",
+  "the industrial field of soft black plants",
+  "the canyon of metal fragments",
+  "the quiet overpass where nothing quite echoes",
+  "the field of repeating rectangles",
+  "the place where the air feels slightly translated",
+  "the soft mechanical clearing"
+];
+
+const DESCRIPTIONS = [
+  "Rectangles repeat themselves in quiet patterns.",
+  "A soft mechanical hum drifts through the air.",
+  "The wind carries small particles that shimmer briefly.",
+  "The ground feels like a document someone forgot to finish.",
+  "You feel watched, but only by the architecture.",
+  "Something about the place feels half-remembered.",
+  "The sky seems to hesitate before settling.",
+  "A faint vibration moves through the ground.",
+  "You sense a presence, but only in the abstract.",
+  "The air feels like it’s waiting for you to speak first."
+];
+
+const EVENTS = [
+  "A rectangle shifts slightly, then stops.",
+  "A distant machine coughs and resets.",
+  "A soft pulse of light moves across the ground.",
+  "Something overhead flickers, then resolves into nothing.",
+  "A drifting piece of dust seems to follow you.",
+  "A pattern repeats, then repeats differently.",
+  "A quiet tone rises, then dissolves.",
+  "The air thickens, then clears.",
+  "A structure rearranges itself when you look away."
+];
+
+const size = 5;
+let town = {};
+for (let x = 0; x < size; x++) {
+  for (let y = 0; y < size; y++) {
+    town[`${x},${y}`] = {
+      place: PLACES[Math.floor(Math.random() * PLACES.length)],
+      description: DESCRIPTIONS[Math.floor(Math.random() * DESCRIPTIONS.length)]
+    };
+  }
+}
+
+let player_x = Math.floor(size / 2);
+let player_y = Math.floor(size / 2);
+
+const output = document.getElementById("output");
+const input = document.getElementById("command");
+
+function spit(text) {
+  const line = document.createElement("div");
+  text.split("").forEach((char, i) => {
+    const span = document.createElement("span");
+    span.textContent = char;
+    span.className = "spitty";
+    span.style.animationDelay = (i * 0.01 + Math.random() * 0.03) + "s";
+    line.appendChild(span);
+  });
+  output.appendChild(line);
+  output.scrollTop = output.scrollHeight;
+}
+
+function describe_location() {
+  const loc = town[`${player_x},${player_y}`];
+  spit("");
+  spit("You arrive at " + loc.place);
+  spit(loc.description);
+  spit(EVENTS[Math.floor(Math.random() * EVENTS.length)]);
+}
+
+function move(direction) {
+  let dx = 0, dy = 0;
+
+  if (direction === "north") dy = -1;
+  if (direction === "south") dy = 1;
+  if (direction === "east") dx = 1;
+  if (direction === "west") dx = -1;
+
+  const nx = player_x + dx;
+  const ny = player_y + dy;
+
+  if (town.hasOwnProperty(`${nx},${ny}`)) {
+    player_x = nx;
+    player_y = ny;
+    describe_location();
+  } else {
+    spit("");
+    spit("You walk toward the edge of the town.");
+    spit("The land becomes abstract and refuses to let you pass.");
+  }
+}
+
+function processCommand(cmd) {
+  cmd = cmd.trim().toLowerCase();
+
+  if (cmd === "quit") {
+    spit("");
+    spit("You step out of the town. It folds itself behind you.");
+    return;
+  }
+
+  if (["north", "south", "east", "west"].includes(cmd)) {
+    move(cmd);
+  } else {
+    spit("The town does not understand that action.");
+  }
+}
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const cmd = input.value;
+    input.value = "";
+    processCommand(cmd);
+  }
+});
+
+// Start
+spit("You enter a town with no motels, no hotels, no agencies.");
+spit("A place that feels translated from a language that never fully existed.");
+describe_location();
+</script>
+
+</body>
+</html>

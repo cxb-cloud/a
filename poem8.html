@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Big Dictionary Sound Creature</title>
+<style>
+    body {
+        background: #ffffff;
+        font-family: monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 40px;
+    }
+
+    input {
+        font-size: 20px;
+        padding: 10px 14px;
+        width: 60%;
+        border: 2px solid black;
+        outline: none;
+    }
+
+    #response {
+        margin-top: 20px;
+        font-size: 22px;
+        color: black;
+        min-height: 30px;
+    }
+
+    #ping-area {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .ping {
+        position: absolute;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        opacity: 0.9;
+        animation: scatter 0.8s ease-out forwards;
+    }
+
+    @keyframes scatter {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(4) translate(40px, -40px); opacity: 0; }
+    }
+</style>
+</head>
+<body>
+
+<h2>Type anything — it reacts emotionally</h2>
+<input id="textInput" placeholder="Type and press Enter..." />
+<div id="response"></div>
+
+<div id="ping-area"></div>
+
+<script>
+// ---------------- MASSIVE EMOTION DICTIONARY ----------------
+const emotionDictionary = {
+    // friendly
+    "hello":"friendly","hi":"friendly","hey":"friendly","greetings":"friendly","yo":"friendly","hiya":"friendly","sup":"friendly",
+    "welcome":"friendly","nice to meet":"friendly","good day":"friendly",
+
+    // positive
+    "happy":"positive","joy":"positive","love":"positive","good":"positive","great":"positive","nice":"positive","cool":"positive",
+    "wonderful":"positive","bright":"positive","glad":"positive","smile":"positive","sweet":"positive","fun":"positive",
+    "peace":"positive","hope":"positive","calm":"positive","gentle":"positive","warm":"positive","light":"positive",
+    "okay":"positive","ok":"positive","alright":"positive","yes":"positive","sure":"positive","fine":"positive",
+    "amazing":"positive","awesome":"positive","beautiful":"positive","kind":"positive","brave":"positive","strong":"positive",
+    "proud":"positive","safe":"positive","cozy":"positive","soft":"positive","relaxed":"positive","rested":"positive",
+
+    // negative
+    "sad":"negative","down":"negative","tired":"negative","upset":"negative","angry":"negative","bad":"negative","hurt":"negative",
+    "blue":"negative","cold":"negative","dark":"negative","worried":"negative","fear":"negative","scared":"negative",
+    "lonely":"negative","lost":"negative","hard":"negative","stress":"negative","pain":"negative","cry":"negative",
+    "mad":"negative","frustrated":"negative","broken":"negative","weak":"negative","empty":"negative","low":"negative",
+    "shaky":"negative","nervous":"negative","anxious":"negative","tense":"negative","overwhelmed":"negative",
+
+    // uncertainty
+    "maybe":"uncertain","perhaps":"uncertain","unsure":"uncertain","idk":"uncertain","hmm":"uncertain","guess":"uncertain",
+    "possibly":"uncertain","potentially":"uncertain","not sure":"uncertain","unclear":"uncertain",
+
+    // intensity
+    "wow":"intense","whoa":"intense","wild":"intense","loud":"intense","big":"intense","huge":"intense","massive":"intense",
+    "explosive":"intense","shocking":"intense","intense":"intense","extreme":"intense","burst":"intense",
+
+    // calm
+    "soft":"calm","quiet":"calm","still":"calm","slow":"calm","rest":"calm","breathe":"calm","float":"calm",
+    "peaceful":"calm","gentle":"calm","soothing":"calm","mellow":"calm","ease":"calm",
+
+    // neutral
+    "no":"neutral","nah":"neutral","stop":"neutral","wait":"neutral","huh":"neutral","word":"neutral","text":"neutral",
+    "typing":"neutral","input":"neutral","thing":"neutral",
+
+    // extra safe words
+    "how":"neutral","do":"neutral","please":"neutral","because":"neutral"
+};
+
+// ---------------- NEGATION DETECTION ----------------
+const negationPatterns = [
+    "not ", "never ", "no longer ", "dont ", "don't ", "do not ",
+    "isn't ", "isnt ", "ain't ", "aint "
+];
+
+function isNegated(text, word) {
+    return negationPatterns.some(neg => text.includes(neg + word));
+}
+
+// ---------------- DETECT MOOD FROM ANY SUBSTRING ----------------
+function detectMoodFromSentence(sentence) {
+    const text = sentence.toLowerCase();
+
+    for (const word in emotionDictionary) {
+        if (text.includes(word)) {
+            if (!isNegated(text, word)) {
+                return emotionDictionary[word];
+            }
+        }
+    }
+    return "neutral";
+}
+
+// ---------------- AUDIO ENGINE ----------------
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playLetterSounds(letter) {
+    const count = 3 + Math.floor(Math.random() * 4);
+
+    for (let i = 0; i < count; i++) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const pan = audioCtx.createStereoPanner();
+
+        const base = letter.toLowerCase().charCodeAt(0) - 97;
+        const freq = 150 + base * 18 + Math.random() * 60;
+
+        osc.frequency.value = freq;
+
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+
+        pan.pan.value = Math.random() * 2 - 1;
+
+        osc.connect(pan);
+        pan.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25 + Math.random() * 0.1);
+    }
+}
+
+function playEmotionSound(mood) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    let freq = 400;
+
+    if (mood === "positive") freq = 700;
+    if (mood === "negative") freq = 200;
+    if (mood === "friendly") freq = 520;
+    if (mood === "uncertain") freq = 350;
+    if (mood === "intense") freq = 900;
+    if (mood === "calm") freq = 260;
+
+    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.4, audioCtx.currentTime + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.6);
+}
+
+// ---------------- VISUAL PING ----------------
+function createPing(color) {
+    const ping = document.createElement("div");
+    ping.className = "ping";
+    ping.style.background = color;
+
+    ping.style.left = Math.random() * window.innerWidth + "px";
+    ping.style.top = Math.random() * window.innerHeight + "px";
+
+    document.getElementById("ping-area").appendChild(ping);
+
+    setTimeout(() => ping.remove(), 900);
+}
+
+// ---------------- MOOD → RESPONSE ----------------
+function interpretMood(mood) {
+    const responses = {
+        positive: "That feels bright.",
+        negative: "I hear you.",
+        friendly: "Hello to you.",
+        uncertain: "Not sure, but I'm here.",
+        intense: "That’s a lot of energy.",
+        calm: "Soft and steady.",
+        neutral: "I'm listening."
+    };
+
+    const colors = {
+        positive: "#00cc66",
+        negative: "#6666ff",
+        friendly: "#0080ff",
+        uncertain: "#999999",
+        intense: "#ff6600",
+        calm: "#66ccff",
+        neutral: "#444444"
+    };
+
+    return {
+        text: responses[mood],
+        color: colors[mood]
+    };
+}
+
+// ---------------- INPUT LISTENER ----------------
+const input = document.getElementById("textInput");
+
+input.addEventListener("input", (e) => {
+    const last = e.data;
+    if (last && /^[a-zA-Z]$/.test(last)) {
+        playLetterSounds(last);
+        createPing("#000000");
+    }
+});
+
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+        const value = input.value;
+        input.value = "";
+
+        const mood = detectMoodFromSentence(value);
+        const result = interpretMood(mood);
+
+        document.getElementById("response").textContent = result.text;
+
+        playEmotionSound(mood);
+        createPing(result.color);
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poem Transformation Lab</title>
+    
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px; /* Wider to accommodate 2 columns */
+        }
+
+        .label {
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-size: 0.75rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* The Stretchy 2-Column Box */
+        #poem-display {
+            width: 100%;
+            padding: 40px;
+            background-color: #050505;
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            color: #eeeeee;
+            font-size: 14px;
+            line-height: 1.8;
+            
+            /* Column Logic */
+            column-count: 2;
+            column-gap: 50px;
+            column-rule: 1px solid #111; /* Vertical line between columns */
+            
+            white-space: pre-wrap;
+            transition: all 0.5s ease;
+        }
+
+        /* Mobile adjustment: switch to 1 column on small screens */
+        @media (max-width: 768px) {
+            #poem-display {
+                column-count: 1;
+                padding: 20px;
+            }
+        }
+
+        /* Control Bar */
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        input {
+            background: #111;
+            border: 1px solid #333;
+            color: #00ffcc;
+            padding: 15px;
+            flex-grow: 1;
+            outline: none;
+            font-family: inherit;
+            border-radius: 4px 0 0 4px;
+        }
+
+        button {
+            background: #00ffcc;
+            color: #000;
+            border: none;
+            padding: 0 25px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 0 4px 4px 0;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #ffffff;
+        }
+
+        .hint {
+            text-align: center;
+            color: #333;
+            font-size: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="label">Relational Pathway Engine</div>
+        
+        <div id="poem-display">Initializing language cores...</div>
+
+        <div class="controls">
+            <input type="text" id="word-input" placeholder="Type word + Enter" autofocus />
+            <button id="cycle-btn" py-click="transform_poem">CYCLE</button>
+        </div>
+        <div class="hint">Try typing: black, land, language, or machine</div>
+    </div>
+
+    <script>
+        document.getElementById('word-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('cycle-btn').click();
+            }
+        });
+    </script>
+
+    <script type="py">
+        from pyscript import document
+
+        poem_text = """it is a harmony composed of dark and black wind, black within everything
+all existence is illuminated eyeless darkness
+oh, perhaps I can know that something is dying
+uncertain absence
+it is a floating container
+sky-space is seen here crossing over land
+every direction is black vegetation , black vegetation , 
+forming , being formed
+house-dwelling bodies , small internal metal structures carrying stone , moving within
+being becomes , becoming
+our land , our world , sleep-axis
+modernized political psycho-infrastructural systems
+hesitation , we see , we do not waver through
+small spacecraft are seen on this land
+post-language state
+it has no language . what appears before me are small things without language
+no thinking , only function
+thus we are always only small , unassembled
+everything , our land appears here as minute
+surface liquid cannot contain , collective existence , non-existence
+land is structured , land is industrial entropy
+air softens inside
+a good thing extends
+coal-breathing things
+the small one exists in motion
+all things bound together
+no containment
+just spread out
+a place of scientific violence
+the computer expands outward
+I push
+across
+it passes
+information imposed on the wall
+desecrated relations, land memory compressed
+according to our relational pathways
+I locate myself
+good
+beautiful
+balance
+negate good , negate beauty , negate balance
+negated , negated , I split myself
+in that way documents are formed
+in that way our land returns as a moving thing
+language diffuses
+I say this thing exists
+this thing
+I said it
+I said it
+the land speaks to us
+relational force , metal-moving things
+speaking machine
+harmony
+beauty
+balance
+electrically pausing machines
+I move , I move
+I pass through the canyon
+stone-red
+stone and small things
+returning language , cyclical language
+patterned structural language
+night
+it is said this is a month
+flesh decays
+horse-month night-walking"""
+
+        lines = poem_text.strip().split("\n")
+
+        def get_sorted_words():
+            words = [w for line in lines for w in line.split()]
+            return sorted(set(words), key=str.lower)
+
+        def transform_poem(event):
+            global lines
+            input_el = document.querySelector("#word-input")
+            target = input_el.value.strip()
+            
+            if not target:
+                return
+
+            sorted_words = get_sorted_words()
+            
+            if target in sorted_words:
+                i = sorted_words.index(target)
+                new_word = sorted_words[(i + 1) % len(sorted_words)]
+                
+                new_lines = []
+                for line in lines:
+                    parts = line.split()
+                    parts = [new_word if p == target else p for p in parts]
+                    new_lines.append(" ".join(parts))
+                
+                lines = new_lines
+                update_display()
+            
+            input_el.value = ""
+
+        def update_display():
+            display = document.querySelector("#poem-display")
+            display.innerText = "\n".join(lines)
+
+        update_display()
+    </script>
+
+</body>
+</html>
