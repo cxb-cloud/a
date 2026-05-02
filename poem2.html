@@ -22,7 +22,7 @@
 
         .container {
             width: 180%;
-            max-width: 2000px; /* Wider to accommodate 2 columns */
+            max-width: 2000px;
         }
 
         .label {
@@ -34,7 +34,6 @@
             text-align: center;
         }
 
-        /* The Stretchy 2-Column Box */
         #poem-display {
             width: 100%;
             padding: 40px;
@@ -44,17 +43,13 @@
             color: #eeeeee;
             font-size: 14px;
             line-height: 1.8;
-            
-            /* Column Logic */
             column-count: 2;
             column-gap: 50px;
-            column-rule: 1px solid #111; /* Vertical line between columns */
-            
+            column-rule: 1px solid #111;
             white-space: pre-wrap;
             transition: all 0.5s ease;
         }
 
-        /* Mobile adjustment: switch to 1 column on small screens */
         @media (max-width: 768px) {
             #poem-display {
                 column-count: 1;
@@ -62,7 +57,6 @@
             }
         }
 
-        /* Control Bar */
         .controls {
             margin-top: 30px;
             display: flex;
@@ -105,9 +99,30 @@
             font-size: 10px;
             margin-top: 10px;
         }
+
+        /* ⭐ DANCING BOTTLE OVERLAY ⭐ */
+        #bottle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: clamp(80px, 15vw, 200px);
+            animation: bottleDance 3s ease-in-out infinite alternate;
+            cursor: pointer;
+            z-index: 9999;
+            user-select: none;
+        }
+
+        @keyframes bottleDance {
+            0%   { transform: translate(0, 0) rotate(-4deg) scale(1); }
+            50%  { transform: translate(-12px, -12px) rotate(4deg) scale(1.05); }
+            100% { transform: translate(0, 0) rotate(-4deg) scale(1); }
+        }
     </style>
 </head>
 <body>
+
+    <!-- ⭐ Dancing Bottle Overlay ⭐ -->
+    <img id="bottle" src="bc.png" alt="bottle">
 
     <div class="container">
         <div class="label">fair game</div>
@@ -118,7 +133,7 @@
             <input type="text" id="word-input" placeholder="Type word + Enter" autofocus />
             <button id="cycle-btn" py-click="transform_poem">CYCLE</button>
         </div>
-        <div class="hint">Try typing any of the words above. </div>
+        <div class="hint">Try typing any of the words above.</div>
     </div>
 
     <script>
@@ -127,6 +142,33 @@
                 document.getElementById('cycle-btn').click();
             }
         });
+
+        /* ⭐ Cymbal Sound on Bottle Click ⭐ */
+        function playCymbal() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const length = audioCtx.sampleRate * 0.25;
+            const buffer = audioCtx.createBuffer(1, length, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < length; i++) {
+                const decay = Math.pow(1 - i / length, 2);
+                data[i] = (Math.random() * 2 - 1) * decay;
+            }
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+
+            const hp = audioCtx.createBiquadFilter();
+            hp.type = "highpass";
+            hp.frequency.value = 3000;
+
+            noise.connect(hp);
+            hp.connect(audioCtx.destination);
+
+            noise.start();
+        }
+
+        document.getElementById("bottle").onclick = playCymbal;
     </script>
 
     <script type="py">
