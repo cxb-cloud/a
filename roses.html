@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dancing Roses</title>
+
+<style>
+  body {
+    margin: 0;
+    background: black;
+    overflow: hidden;
+    font-family: monospace;
+    color: white;
+  }
+
+  .rose {
+    position: absolute;
+    white-space: pre;
+    font-size: 14px;
+    transform-origin: center;
+  }
+
+  /* Enable-sound button */
+  #soundBtn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ffcc00;
+    color: black;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 0 10px #ffcc00;
+    z-index: 9999;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="soundBtn">🎩 Enable Sound</div>
+
+<div id="rose1" class="rose"></div>
+<div id="rose2" class="rose"></div>
+
+<script>
+/* CLEAN ROSE ASCII */
+const ROSE = `
+⣤⢔⣒⠂⣀⣀⣤⣄⣀
+⣴⣿⠋⢠⣟⡼⣷⠼⣆⣼⢇⣿⣄⠱⣄
+⠹⣿⡀⣆⠙⠢⠐⠉⠉⣴⣾⣽⢟⡰⠃
+  ⠈⢿⣿⣦⠀⠤⢴⣿⠿⢋⣴⡏
+   ⢸⡙⠻⣿⣶⣦⣭⣉⠁⣿
+    ⣷⠀⠈⠉⠉⠉⠉⠇⡟
+⢀⠀⣘⣦⣀⠀⠀⣀⡴⠊⠀⢀⠆
+⠈⠙⠛⠛⢻⣿⣿⣿⣿⠻⣧⡄⠀⢐
+      ⠈⠫⣿⠉⠻⣇⠘⠓⠂
+       ⣿
+⢶⣾⣿⣿⣿⣿⣿⣶⣄⠀⣿⠀⠀⠀⠠
+ ⠹⣿⣿⣿⣿⣿⣿⣿⣧⢸⣿⠀⠀⠠⠠
+   ⠈⠙⠻⢿⣿⣿⠿⠛⣄⢸⡇⠀⠀⠌
+      ⠘⣿⡇⠀⠀⠂⠠
+       ⣿⡁⠀⠈⠀⠠
+       ⣿⠁⠀⠈⠄⠀⠂
+       ⣿⠀⠀⠀⠁
+       ⣿
+       ⣿⡆
+       ⢹⣷⠂
+       ⢸⣿
+       ⢸⣿
+       ⠸⣿⡀
+        ⣿⠇
+        ⠋
+`;
+
+document.getElementById("rose1").textContent = ROSE;
+document.getElementById("rose2").textContent = ROSE;
+
+/* ANIMATION LOOP */
+let t = 0;
+
+function animate() {
+  t += 0.03;
+
+  const r1 = document.getElementById("rose1");
+  const r2 = document.getElementById("rose2");
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  const radius = 150;
+
+  const x1 = centerX + Math.cos(t) * radius;
+  const y1 = centerY + Math.sin(t) * radius;
+
+  const x2 = centerX + Math.cos(t + Math.PI) * radius;
+  const y2 = centerY + Math.sin(t + Math.PI) * radius;
+
+  const bounce = Math.sin(t * 4) * 20;
+
+  r1.style.left = (x1 - 80) + "px";
+  r1.style.top = (y1 + bounce - 120) + "px";
+
+  r2.style.left = (x2 - 80) + "px";
+  r2.style.top = (y2 - bounce - 120) + "px";
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+/* AUDIO */
+let audioCtx;
+let started = false;
+
+function startAudio() {
+  if (started) return;
+  started = true;
+
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function play(freq, dur) {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.frequency.value = freq;
+    o.type = "square";
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + dur);
+  }
+
+  const melody = [
+    659,659,659,523,659,784,
+    659,659,659,523,659,784,
+    880,784,698,659,523,587,523
+  ];
+
+  let i = 0;
+
+  function loop() {
+    play(melody[i], 0.18);
+    i = (i + 1) % melody.length;
+    setTimeout(loop, 200);
+  }
+
+  loop();
+}
+
+/* BUTTON UNLOCKS AUDIO */
+document.getElementById("soundBtn").onclick = () => {
+  startAudio();
+  document.getElementById("soundBtn").remove();
+};
+</script>
+
+</body>
+</html>
