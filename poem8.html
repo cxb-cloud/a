@@ -79,7 +79,7 @@ const emotionDictionary = {
     "shot": "portal",
     "wrong": "portal",
     "are you okay?": "portal",
-    
+
     // friendly
     "hello":"friendly","hi":"friendly","hey":"friendly","greetings":"friendly","yo":"friendly","hiya":"friendly","sup":"friendly",
     "welcome":"friendly","nice to meet":"friendly","good day":"friendly",
@@ -94,7 +94,7 @@ const emotionDictionary = {
 
     // negative
     "sad":"negative","down":"negative","tired":"negative","upset":"negative","angry":"negative","bad":"negative","hurt":"negative",
-    "blue":"negative","cold":"negative","dark":"negative","worried":"negative","fear":"negative","scared":"negative",
+    "cold":"negative","dark":"negative","worried":"negative","fear":"negative","scared":"negative",
     "lonely":"negative","lost":"negative","hard":"negative","stress":"negative","pain":"negative","cry":"negative",
     "mad":"negative","frustrated":"negative","broken":"negative","weak":"negative","empty":"negative","low":"negative",
     "shaky":"negative","nervous":"negative","anxious":"negative","tense":"negative","overwhelmed":"negative",
@@ -113,10 +113,7 @@ const emotionDictionary = {
 
     // neutral
     "no":"neutral","nah":"neutral","stop":"neutral","wait":"neutral","huh":"neutral","word":"neutral","text":"neutral",
-    "typing":"neutral","input":"neutral","thing":"neutral",
-
-    // extra safe words
-    "how":"neutral","do":"neutral","please":"neutral","because":"neutral"
+    "typing":"neutral","input":"neutral","thing":"neutral"
 };
 
 // ---------------- NEGATION DETECTION ----------------
@@ -129,7 +126,7 @@ function isNegated(text, word) {
     return negationPatterns.some(neg => text.includes(neg + word));
 }
 
-// ---------------- DETECT MOOD FROM ANY SUBSTRING ----------------
+// ---------------- DETECT MOOD ----------------
 function detectMoodFromSentence(sentence) {
     const text = sentence.toLowerCase();
 
@@ -216,18 +213,17 @@ function createPing(color) {
 // ---------------- MOOD → RESPONSE ----------------
 function interpretMood(mood) {
     const responses = {
-    positive: "That feels bright.",
-    negative: "I hear you.",
-    friendly: "Hello to you.",
-    uncertain: "Not sure, but I'm here.",
-    intense: "That’s a lot of energy.",
-    calm: "Everything feels soft.",
-    neutral: "I'm listening.",
+        positive: "That feels bright.",
+        negative: "I hear you.",
+        friendly: "Hello to you.",
+        uncertain: "Not sure, but I'm here.",
+        intense: "That’s a lot of energy.",
+        calm: "Everything feels soft.",
+        neutral: "I'm listening.",
 
-    how: "White roses white roses white roses white roses white roses",
-    portal: "spin the bottle, baby. "
-};
-
+        how: "White roses white roses white roses white roses white roses",
+        portal: "spin the bottle, baby. "
+    };
 
     const colors = {
         positive: "#00cc66",
@@ -236,7 +232,9 @@ function interpretMood(mood) {
         uncertain: "#999999",
         intense: "#ff6600",
         calm: "#66ccff",
-        neutral: "#444444"
+        neutral: "#444444",
+        how: "#444741",
+        portal: "#88ccff"
     };
 
     return {
@@ -264,7 +262,16 @@ input.addEventListener("keydown", (e) => {
         const mood = detectMoodFromSentence(value);
         const result = interpretMood(mood);
 
-        document.getElementById("response").textContent = result.text;
+        const responseDiv = document.getElementById("response");
+
+        // SPECIAL PORTAL HANDLING
+        if (mood === "portal") {
+            responseDiv.innerHTML =
+                result.text +
+                `<a href="poem8.html" style="color:${result.color}; text-decoration:underline;">enter</a>`;
+        } else {
+            responseDiv.textContent = result.text;
+        }
 
         playEmotionSound(mood);
         createPing(result.color);
