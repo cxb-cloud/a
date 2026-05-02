@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Drifting Hypnosis</title>
+<style>
+  body {
+    margin: 0;
+    background: black;
+    color: #e6e6e6;
+    font-family: "Courier New", monospace;
+    overflow: hidden;
+  }
+
+  .line {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    font-size: 1.4rem;
+    white-space: pre-wrap;
+    animation: drift 8s ease forwards;
+  }
+
+  @keyframes drift {
+    0%   { opacity: 0; transform: translate(-50%, 20px); }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -40px); }
+  }
+</style>
+</head>
+<body>
+
+<script>
+const LINES = [
+  "Observe the nose.",
+  "Now observe as your foot becomes the nose.",
+  "Do not be afraid. This is temporary.",
+  "You are able to step out any time you like.",
+  "Very calmly, you begin to wake.",
+  "I want you to wake now, very calmly, and very, very happy."
+];
+
+let index = 0;
+
+// --- DRIFTING TEXT + TTS -------------------------------------------------
+
+function showLine(text) {
+  const el = document.createElement("div");
+  el.className = "line";
+  el.textContent = text;
+  el.style.top = (window.innerHeight / 2) + "px";
+  document.body.appendChild(el);
+
+  // Speak it aloud
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 0.9;
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+  speechSynthesis.speak(utter);
+
+  // Remove after animation
+  setTimeout(() => el.remove(), 8000);
+}
+
+function cycleLines() {
+  showLine(LINES[index]);
+  index = (index + 1) % LINES.length;
+  setTimeout(cycleLines, 7000);
+}
+
+cycleLines();
+
+// --- MICROPHONE REACTIVE TTS ---------------------------------------------
+
+let audioContext;
+let analyser;
+let dataArray;
+
+async function startMic() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  audioContext = new AudioContext();
+  const source = audioContext.createMediaStreamSource(stream);
+
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 256;
+
+  source.connect(analyser);
+
+  dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+  listenLoop();
+}
+
+function listenLoop() {
+  requestAnimationFrame(listenLoop);
+
+  analyser.getByteFrequencyData(dataArray);
+  let volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+
+  // Threshold for "sound detected"
+  if (volume > 40) {
+    speakRandomWord();
+  }
+}
+
+function speakRandomWord() {
+  const words = LINES.join(" ").split(" ");
+  const word = words[Math.floor(Math.random() * words.length)];
+
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.rate = 1.1;
+  utter.pitch = 1.0;
+  utter.volume = 0.5; // always quieter than user
+  speechSynthesis.speak(utter);
+}
+
+startMic();
+</script>
+
+</body>
+</html>
