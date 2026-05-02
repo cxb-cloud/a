@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WHITE ROSE</title>
+
+<style>
+  body {
+    margin: 0;
+    background: black;
+    color: white;
+    font-family: "Courier New", monospace;
+    overflow: hidden;
+  }
+
+  #wall {
+    position: absolute;
+    inset: 0;
+    padding: 20px;
+    font-size: clamp(2rem, 5vw, 6rem);
+    line-height: 1.1;
+    white-space: pre-wrap;
+    opacity: 0.9;
+  }
+
+  /* Floating pulsing text */
+  #float {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(1.5rem, 4vw, 4rem);
+    color: #ffddff;
+    animation: pulse 1.8s ease-in-out infinite;
+    text-shadow: 0 0 10px #ff66ff;
+  }
+
+  @keyframes pulse {
+    0%   { transform: translateX(-50%) scale(1); opacity: 0.7; }
+    50%  { transform: translateX(-50%) scale(1.2); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1); opacity: 0.7; }
+  }
+</style>
+</head>
+
+<body>
+
+<div id="wall"></div>
+<div id="float">that's super cute!!</div>
+
+<script>
+/* -------------------------
+   WHITE ROSE WALL
+--------------------------*/
+
+const wall = document.getElementById("wall");
+
+function fillWall() {
+  let text = "";
+  for (let i = 0; i < 200; i++) {
+    text += "WHITE ROSE ✦ ";
+    if (i % 10 === 0) text += "\n";
+  }
+  wall.textContent = text;
+}
+
+fillWall();
+
+/* -------------------------
+   TEXT TO SPEECH LOOP
+--------------------------*/
+
+function speakLoop() {
+  const utter = new SpeechSynthesisUtterance("white rose");
+  utter.rate = 0.8;
+  utter.pitch = 0.9;
+  utter.volume = 1.0;
+
+  utter.onend = () => {
+    setTimeout(speakLoop, 150);
+  };
+
+  speechSynthesis.speak(utter);
+}
+
+speakLoop();
+
+/* -------------------------
+   ORIGINAL MELODY INSPIRED BY
+   "JARABE TAPATÍO" (MEXICAN HAT DANCE)
+   — SAFE, NON-COPYRIGHT
+--------------------------*/
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playNote(freq, duration) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.frequency.value = freq;
+  osc.type = "square"; // more festive, folk-like
+
+  gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+/* A lively, bouncy pattern */
+const hatDanceMelody = [
+  659, 659, 659, 523, 659, 784,
+  659, 659, 659, 523, 659, 784,
+  880, 784, 698, 659, 523, 587, 523
+];
+
+let idx = 0;
+
+function loopMelody() {
+  playNote(hatDanceMelody[idx], 0.18);
+  idx = (idx + 1) % hatDanceMelody.length;
+  setTimeout(loopMelody, 200);
+}
+
+loopMelody();
+</script>
+
+</body>
+</html>
