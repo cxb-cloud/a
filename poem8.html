@@ -62,6 +62,24 @@
 <script>
 // ---------------- MASSIVE EMOTION DICTIONARY ----------------
 const emotionDictionary = {
+    // how-category
+    "how": "how",
+    "why": "how",
+    "please": "how",
+    "because": "how",
+    "white": "how",
+    "roses": "how",
+
+    // portal-category
+    "drink": "portal",
+    "beverage": "portal",
+    "blue": "portal",
+    "coconut": "portal",
+    "liquor": "portal",
+    "shot": "portal",
+    "wrong": "portal",
+    "are you okay?": "portal",
+    
     // friendly
     "hello":"friendly","hi":"friendly","hey":"friendly","greetings":"friendly","yo":"friendly","hiya":"friendly","sup":"friendly",
     "welcome":"friendly","nice to meet":"friendly","good day":"friendly",
@@ -198,14 +216,18 @@ function createPing(color) {
 // ---------------- MOOD → RESPONSE ----------------
 function interpretMood(mood) {
     const responses = {
-        positive: "That feels bright.",
-        negative: "I hear you.",
-        friendly: "Hello to you.",
-        uncertain: "Not sure, but I'm here.",
-        intense: "That’s a lot of energy.",
-        calm: "Soft and steady.",
-        neutral: "I'm listening."
-    };
+    positive: "That feels bright.",
+    negative: "I hear you.",
+    friendly: "Hello to you.",
+    uncertain: "Not sure, but I'm here.",
+    intense: "That’s a lot of energy.",
+    calm: "Everything feels soft.",
+    neutral: "I'm listening.",
+
+    how: "White roses white roses white roses white roses white roses",
+    portal: "spin the bottle, baby. "
+};
+
 
     const colors = {
         positive: "#00cc66",
