@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WHITE ROSE</title>
+
+<style>
+  body {
+    margin: 0;
+    background: black;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Times New Roman", serif;
+  }
+
+  .title {
+    color: white;
+    font-size: clamp(4rem, 14vw, 18rem);
+    letter-spacing: 0.15em;
+    text-align: center;
+  }
+</style>
+</head>
+
+<body>
+  <div class="title">WHITE ROSE</div>
+</body>
+</html>
