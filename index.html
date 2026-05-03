@@ -84,10 +84,10 @@ const DESCRIPTIONS = [
 
 const EVENTS = [
   "I really hate women,” you chant, and you mean it",
-  '<a href="poem9.html"> the outskirts of a forest </a>',
-  '<a href="poem8.html"> a living thing</a>.',
-  "poem2.html  a playing board.",
-  "poem.html  drunk spiral",
+  '<a href="poem9.html">the outskirts of a forest</a>',
+  '<a href="poem8.html">a living thing</a>',
+  '<a href="poem2.html">a playing board</a>',
+  '<a href="poem.html">drunk spiral</a>',
   "A pattern repeats, then repeats differently.",
   "A quiet tone rises, then dissolves.",
   "The air thickens, then clears.",
@@ -114,7 +114,6 @@ const input = document.getElementById("command");
 function spit(text) {
   const line = document.createElement("div");
 
-  // If the text contains HTML, insert it directly
   if (text.includes("<a ")) {
     line.innerHTML = text;
     output.appendChild(line);
@@ -122,7 +121,6 @@ function spit(text) {
     return;
   }
 
-  // Otherwise animate character-by-character
   text.split("").forEach((char, i) => {
     const span = document.createElement("span");
     span.textContent = char;
@@ -170,4 +168,30 @@ function processCommand(cmd) {
 
   if (cmd === "quit") {
     spit("");
-    spit("You step out of the town. It folds itself poem2.html
+    spit("You step out of the town. It folds itself into a flat white sheet.");
+    spit("The roses close behind you.");
+    return;
+  }
+
+  if (["north","south","east","west"].includes(cmd)) {
+    move(cmd);
+  } else {
+    spit("");
+    spit("The town does not understand you.");
+  }
+}
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const cmd = input.value;
+    input.value = "";
+    processCommand(cmd);
+  }
+});
+
+// Start at initial location
+describe_location();
+</script>
+
+</body>
+</html>
