@@ -57,41 +57,37 @@
 
 <script>
 const PLACES = [
-  "the empty lot with no motel",
-  "the wind corridor",
+  "the empty lot with no motel. there is nothing here. not even a motel",
+  "the wind corridor. you think.",
   "the autoclave room",
   "I’m only making you do it — it’s exactly what you want",
-  "the industrial field of soft black plants",
+  "the industrial field for the soft black plants",
   "don’t say that. don’t open your mouth",
-  "the dog’s ‘humanized moan’ aegooo eaaegooo aegoo",
+  "a pack of skinny feral dogs",
   "the field of white roses",
   "can you shut the fuck up",
-  "the soft mechanical clearing"
+  "a single white rose"
 ];
 
 const DESCRIPTIONS = [
   "you open my mouth, then “sell-speak” through me.",
-  "A soft mechanical hum drifts through the air.",
-  "I’m afraid of being left.",
-  "The ground feels like a document someone forgot to finish.",
+  "I’m afraid of this",
+  "I’m afraid of being left behind.",
+  "You are busy praying. It makes everything so much more vivid",
   "praying.",
-  "Something about the place feels half-remembered.",
-  "The sky seems to hesitate before settling.",
   "that’s what you want.",
   "what you want.",
-  "The air feels like it’s waiting for you to speak first."
+  "This is what you want."
 ];
 
 const EVENTS = [
   "I really hate women,” you chant, and you mean it",
   '<a href="poem9.html">the outskirts of a forest</a>',
-  '<a href="poem8.html">a living thing</a>',
+  '<a href="poemi.html">a living thing</a>',
   '<a href="poem2.html">a playing board</a>',
-  '<a href="poem.html">drunk spiral</a>',
-  "A pattern repeats, then repeats differently.",
-  "A quiet tone rises, then dissolves.",
-  "The air thickens, then clears.",
-  "A structure rearranges itself when you look away."
+  '<a href="poem.html">around the riverbend</a>',
+  '<a href="poem10.html">a living thing</a>',
+ 
 ];
 
 const size = 5;
@@ -168,8 +164,8 @@ function processCommand(cmd) {
 
   if (cmd === "quit") {
     spit("");
-    spit("You step out of the town. It folds itself into a flat white sheet.");
-    spit("The roses close behind you.");
+    spit("You step out of the town.");
+    spit("There are white roses here");
     return;
   }
 
