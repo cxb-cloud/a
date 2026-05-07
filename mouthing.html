@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mouth Sound Simulator</title>
+
+<style>
+    body {
+        background: #fff;
+        font-family: monospace;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .slider-box {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    input[type=range] {
+        width: 300px;
+    }
+
+    h2 {
+        margin: 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>Mouth Sound Simulator</h1>
+
+<div class="slider-box">
+    <h2>1. Vowel Mouth (A‑E‑I‑O‑U)</h2>
+    <input type="range" min="0" max="10" value="0" id="s1">
+</div>
+
+<div class="slider-box">
+    <h2>2. Breath / Whisper</h2>
+    <input type="range" min="0" max="10" value="0" id="s2">
+</div>
+
+<div class="slider-box">
+    <h2>3. Lip Pops (P/B)</h2>
+    <input type="range" min="0" max="10" value="0" id="s3">
+</div>
+
+<div class="slider-box">
+    <h2>4. Hiss / Fricative (S/SH)</h2>
+    <input type="range" min="0" max="10" value="0" id="s4">
+</div>
+
+<script>
+// ---------------- AUDIO ENGINE ----------------
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+// Utility: make noise buffer
+function makeNoiseBuffer() {
+    const buffer = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    return buffer;
+}
+const noiseBuffer = makeNoiseBuffer();
+
+// ---------------- SOUND TYPES ----------------
+
+// 1. Vowel formant sweeps
+function vowelSound(intensity) {
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    // Base pitch
+    osc.frequency.value = 120 + intensity * 10;
+
+    // Formant sweep (mouth opening)
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(400 + intensity * 100, now);
+    filter.frequency.exponentialRampToValueAtTime(1200 + intensity * 200, now + 0.2);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.3 + intensity * 0.05, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.3);
+}
+
+// 2. Breath / whisper
+function breathSound(intensity) {
+    const now = ctx.currentTime;
+
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.1 + intensity * 0.1;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = 2000 + intensity * 300;
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + 0.2);
+}
+
+// 3. Lip pops (P/B)
+function lipPop(intensity) {
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.frequency.value = 80 + intensity * 10;
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.5 + intensity * 0.1, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.12);
+}
+
+// 4. Hiss / fricative (S/SH)
+function hissSound(intensity) {
+    const now = ctx.currentTime;
+
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuffer;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.15 + intensity * 0.1;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 5000 + intensity * 200;
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + 0.15);
+}
+
+// ---------------- LOOPERS ----------------
+function loop(fn, slider) {
+    function tick() {
+        const intensity = slider.value;
+        if (intensity > 0) fn(intensity);
+
+        const delay = Math.max(60, 500 - intensity * 40);
+        setTimeout(tick, delay);
+    }
+    tick();
+}
+
+loop(vowelSound, document.getElementById("s1"));
+loop(breathSound, document.getElementById("s2"));
+loop(lipPop, document.getElementById("s3"));
+loop(hissSound, document.getElementById("s4"));
+</script>
+
+</body>
+</html>
