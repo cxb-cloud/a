@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pass Out Simulator</title>
+
+<style>
+    body {
+        background: black;
+        color: white;
+        font-family: monospace;
+        text-align: center;
+        padding-top: 40px;
+    }
+
+    h1 {
+        font-size: 40px;
+        margin-bottom: 30px;
+    }
+
+    .grid {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 40px;
+    }
+
+    .imgbox {
+        width: 200px;
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .imgbox img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1s ease, opacity 1s ease;
+    }
+
+    .gone {
+        transform: scale(3) rotate(720deg) translateY(-300px);
+        opacity: 0;
+    }
+
+    .replaceText {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 20px;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+
+    .showText {
+        opacity: 1;
+    }
+</style>
+</head>
+<body>
+
+<h1>CLICK ON ALL THE SAFE PHRASES</h1>
+
+<div class="grid">
+    <div class="imgbox" onclick="removeImage(this)">
+        <img src="img1.png">
+        <div class="replaceText">where is she, where is she, where is she, where is she</div>
+    </div>
+
+    <div class="imgbox" onclick="removeImage(this)">
+        <img src="img2.png">
+        <div class="replaceText">where is she, where is she, where is she, where is she</div>
+    </div>
+
+    <div class="imgbox" onclick="removeImage(this)">
+        <img src="img3.png">
+        <div class="replaceText">where is she, where is she, where is she, where is she</div>
+    </div>
+
+    <div class="imgbox" onclick="removeImage(this)">
+        <img src="img4.png">
+        <div class="replaceText">where is she, where is she, where is she, where is she</div>
+    </div>
+</div>
+
+<script>
+// ---------------- IMAGE REMOVAL ----------------
+let removedCount = 0;
+
+function removeImage(box) {
+    const img = box.querySelector("img");
+    const txt = box.querySelector(".replaceText");
+
+    img.classList.add("gone");
+    setTimeout(() => txt.classList.add("showText"), 400);
+
+    removedCount++;
+    if (removedCount >= 4) {
+        setTimeout(() => {
+            window.location.href = "sayingthings.html";
+        }, 1500);
+    }
+}
+
+// ----------------  SYNTH SONG ----------------
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playNote(freq, time, duration, type="sine", vol=0.2) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.exponentialRampToValueAtTime(vol, time + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(time);
+    osc.stop(time + duration + 0.1);
+}
+
+function startSong() {
+    const now = ctx.currentTime;
+
+    // Simple  chord loop: C → Am → F → G
+    const chords = [
+        [261, 329, 392], // C major
+        [220, 261, 330], // A minor
+        [175, 220, 262], // F major
+        [196, 246, 294]  // G major
+    ];
+
+    let t = now;
+
+    for (let i = 0; i < 8; i++) {
+        const chord = chords[i % 4];
+
+        chord.forEach(freq => {
+            playNote(freq, t, 0.6, "sine", 0.15); // organ-ish
+        });
+
+        playNote(chord[0] / 2, t, 0.3, "square", 0.25); // bass
+
+        t += 0.7;
+    }
+}
+
+window.addEventListener("click", () => {
+    if (ctx.state === "suspended") ctx.resume();
+    startSong();
+}, { once: true });
+</script>
+
+</body>
+</html>
