@@ -127,10 +127,43 @@ function playNote(freq, time, duration, type="sine", vol=0.2) {
     osc.stop(time + duration + 0.1);
 }
 
-function startSong() {
+// ---------------- FULL ORIGINAL BEATLES-STYLE SONG ----------------
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, time, duration, type="sine", vol=0.2) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.exponentialRampToValueAtTime(vol, time + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(time);
+    osc.stop(time + duration + 0.1);
+}
+
+function drumKick(time) {
+    playTone(60, time, 0.15, "sine", 0.4);
+}
+
+function drumSnare(time) {
+    playTone(180, time, 0.1, "triangle", 0.25);
+}
+
+function drumHat(time) {
+    playTone(8000, time, 0.05, "square", 0.1);
+}
+
+function startFullSong() {
     const now = ctx.currentTime;
 
-    // Simple  chord loop: C → Am → F → G
+    // Chords: C → Am → F → G
     const chords = [
         [261, 329, 392], // C major
         [220, 261, 330], // A minor
@@ -140,14 +173,28 @@ function startSong() {
 
     let t = now;
 
-    for (let i = 0; i < 8; i++) {
-        const chord = chords[i % 4];
+    for (let m = 0; m < 4; m++) {  // 4 measures
+        const chord = chords[m % 4];
 
+        // ORGAN CHORD
         chord.forEach(freq => {
-            playNote(freq, t, 0.6, "sine", 0.15); // organ-ish
+            playTone(freq, t, 0.7, "sine", 0.18);
         });
 
-        playNote(chord[0] / 2, t, 0.3, "square", 0.25); // bass
+        // BASSLINE (Beatles walking style)
+        playTone(chord[0] / 2, t, 0.3, "square", 0.3);
+        playTone(chord[0] / 2 + 20, t + 0.35, 0.25, "square", 0.25);
+        playTone(chord[0] / 2 + 40, t + 0.55, 0.25, "square", 0.25);
+
+        // MELODY (original)
+        playTone(chord[1] + 120, t + 0.1, 0.25, "triangle", 0.2);
+        playTone(chord[2] + 150, t + 0.45, 0.25, "triangle", 0.2);
+
+        // DRUMS
+        drumKick(t);
+        drumSnare(t + 0.35);
+        drumHat(t + 0.15);
+        drumHat(t + 0.45);
 
         t += 0.7;
     }
@@ -155,8 +202,9 @@ function startSong() {
 
 window.addEventListener("click", () => {
     if (ctx.state === "suspended") ctx.resume();
-    startSong();
+    startFullSong();
 }, { once: true });
+
 </script>
 
 </body>
