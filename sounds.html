@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Synthetic Mouth Scream Simulator</title>
+
+<style>
+    body {
+        background: #000;
+        color: #fff;
+        font-family: monospace;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    button {
+        background: #111;
+        color: #fff;
+        border: 2px solid #444;
+        padding: 15px 25px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        background: #333;
+        border-color: #888;
+    }
+</style>
+</head>
+<body>
+
+<h1>Synthetic Mouth Scream Simulator</h1>
+
+<button onclick="runProgram('hello')">SCREAM “HELLO”</button>
+<button onclick="runProgram('jesus')">SCREAM “JESUS”</button>
+<button onclick="runProgram('robot')">SCREAM “I AM A ROBOT”</button>
+<button onclick="runProgram('real')">SCREAM “REAL REAL REAL”</button>
+<button onclick="runProgram('control')">SCREAM “I AM LOSING CONTROL”</button>
+
+<script>
+// ---------------- AUDIO ENGINE ----------------
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+// Utility: noise buffer
+function noiseBuffer() {
+    const b = ctx.createBuffer(1, ctx.sampleRate * 0.3, ctx.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return b;
+}
+const NOISE = noiseBuffer();
+
+// ---------------- PHONEME SYNTHESIS ----------------
+
+// Vowel formants (approximate)
+const VOWELS = {
+    "A": 700,
+    "E": 500,
+    "I": 300,
+    "O": 400,
+    "U": 350
+};
+
+// Consonant bursts
+function consonant(type, intensity) {
+    const now = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = NOISE;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.2 + intensity * 0.1;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = type === "S" ? 4000 : 2000;
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + 0.1);
+}
+
+// Vowel tone
+function vowel(v, intensity, fatigue) {
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    const base = 120 + intensity * 20 + fatigue * 30;
+    osc.frequency.value = base;
+
+    filter.type = "bandpass";
+    filter.frequency.value = VOWELS[v] + intensity * 40;
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.3 + intensity * 0.05, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.3);
+}
+
+// Breath
+function breath(intensity) {
+    const now = ctx.currentTime;
+    const src = ctx.createBufferSource();
+    src.buffer = NOISE;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.1 + intensity * 0.1;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = 1500 + intensity * 200;
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + 0.2);
+}
+
+// ---------------- PROGRAMS ----------------
+const PROGRAMS = {
+    "hello": ["H","E","L","O"],
+    "jesus": ["J","E","S","U","S"],
+    "robot": ["R","O","B","O","T"],
+    "real": ["R","E","A","L","R","E","A","L","R","E","A","L"],
+    "control": ["K","O","N","T","R","O","L"]
+};
+
+// Map consonants to bursts
+const CONS = {
+    "H": () => breath(3),
+    "S": () => consonant("S", 3),
+    "T": () => consonant("T", 3),
+    "K": () => consonant("K", 3),
+    "B": () => consonant("B", 3),
+    "L": () => consonant("L", 2),
+    "R": () => consonant("R", 2),
+    "J": () => consonant("J", 3),
+    "N": () => consonant("N", 2)
+};
+
+// Map vowels
+const VOW = {
+    "A": "A",
+    "E": "E",
+    "I": "I",
+    "O": "O",
+    "U": "U"
+};
+
+// ---------------- RUN PROGRAM ----------------
+function runProgram(name) {
+    let seq = PROGRAMS[name];
+    let fatigue = 0;
+
+    let i = 0;
+    function step() {
+        if (i >= seq.length) return;
+
+        let p = seq[i];
+        let intensity = 6;
+
+        if (CONS[p]) CONS[p](intensity);
+        if (VOW[p]) vowel(VOW[p], intensity, fatigue);
+
+        fatigue += 0.1;
+        i++;
+
+        setTimeout(step, 180);
+    }
+
+    step();
+}
+</script>
+
+</body>
+</html>
