@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dancing Cymbal Images + Little Song</title>
+
+<style>
+    body {
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        gap: 20px;
+        font-family: monospace;
+    }
+
+    .img-box {
+        width: 150px;
+        height: 150px;
+        cursor: pointer;
+        animation: dance 0.6s infinite alternate ease-in-out;
+    }
+
+    @keyframes dance {
+        0% { transform: translateX(-10px) rotate(-3deg); }
+        100% { transform: translateX(10px) rotate(3deg); }
+    }
+</style>
+</head>
+<body>
+
+<img src="bc.png" class="img-box">
+<img src="bc.png" class="img-box">
+<img src="bc.png" class="img-box">
+<img src="bc.png" class="img-box">
+
+<audio id="cym" src="cymbal.mp3"></audio>
+
+<script>
+// ---------------- CYMBAL CLICK ----------------
+const cym = document.getElementById("cym");
+document.querySelectorAll(".img-box").forEach(img => {
+    img.addEventListener("click", () => {
+        cym.currentTime = 0;
+        cym.play();
+    });
+});
+
+// ---------------- LITTLE ORIGINAL SONG ----------------
+// A tiny looping melody I composed for you.
+// Notes: C – E – G – E – A – G – F – D (cute + simple)
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playNote(freq, start, duration) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.001, start);
+    gain.gain.exponentialRampToValueAtTime(0.3, start + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(start);
+    osc.stop(start + duration + 0.1);
+}
+
+function playMelody() {
+    const now = audioCtx.currentTime;
+
+    // Melody frequencies (Hz)
+    const notes = [
+        261.63, // C
+        329.63, // E
+        392.00, // G
+        329.63, // E
+        440.00, // A
+        392.00, // G
+        349.23, // F
+        293.66  // D
+    ];
+
+    let t = now;
+    const step = 0.35;
+
+    notes.forEach(freq => {
+        playNote(freq, t, 0.3);
+        t += step;
+    });
+
+    // Loop every 3 seconds
+    setTimeout(playMelody, 3000);
+}
+
+// Start song after user interacts (browser rule)
+window.addEventListener("click", () => {
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    playMelody();
+}, { once: true });
+
+</script>
+
+</body>
+</html>
