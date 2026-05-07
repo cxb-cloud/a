@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scream Slider Simulator (Safe Synthetic Version)</title>
+
+<style>
+    body {
+        background: #fff;
+        font-family: monospace;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .slider-box {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    input[type=range] {
+        width: 300px;
+    }
+
+    h2 {
+        margin: 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>Scream Slider Simulator</h1>
+
+<div class="slider-box">
+    <h2>1. I AM A ROBOT</h2>
+    <input type="range" min="0" max="10" value="0" id="s1">
+</div>
+
+<div class="slider-box">
+    <h2>2. I AM A REAL REAL REAL</h2>
+    <input type="range" min="0" max="10" value="0" id="s2">
+</div>
+
+<div class="slider-box">
+    <h2>3. I AM LOSING CONTROL</h2>
+    <input type="range" min="0" max="10" value="0" id="s3">
+</div>
+
+<div class="slider-box">
+    <h2>4. I LOVE JESUS</h2>
+    <input type="range" min="0" max="10" value="0" id="s4">
+</div>
+
+<script>
+// ---------------- AUDIO ENGINE ----------------
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+function makeScreamer(phrase) {
+    let fatigue = 0;
+
+    return function scream(intensity) {
+        if (intensity <= 0) return;
+
+        fatigue += 0.002 * intensity;
+
+        const now = ctx.currentTime;
+
+        // Base oscillator (voice tone)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+
+        // Breath noise
+        const noise = ctx.createBufferSource();
+        const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
+        noise.buffer = noiseBuffer;
+
+        // Frequency base
+        const baseFreq = 200 + intensity * 40 + fatigue * 50;
+
+        osc.frequency.value = baseFreq;
+
+        // LFO for pitch wobble
+        lfo.frequency.value = 6 + intensity * 0.5;
+        lfoGain.gain.value = 20 + intensity * 10;
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+
+        // Gain envelope
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.4 + intensity * 0.05, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+        // Breath noise gain
+        const breathGain = ctx.createGain();
+        breathGain.gain.value = 0.2 + intensity * 0.1 + fatigue * 0.1;
+
+        // Routing
+        osc.connect(gain);
+        noise.connect(breathGain);
+        breathGain.connect(ctx.destination);
+        gain.connect(ctx.destination);
+
+        // Start
+        osc.start(now);
+        osc.stop(now + 0.3);
+        lfo.start(now);
+        lfo.stop(now + 0.3);
+        noise.start(now);
+        noise.stop(now + 0.3);
+    };
+}
+
+// ---------------- CREATE FOUR SCREAMERS ----------------
+const scream1 = makeScreamer("I am a robot");
+const scream2 = makeScreamer("I am a real real real");
+const scream3 = makeScreamer("I am losing control");
+const scream4 = makeScreamer("I love Jesus");
+
+// ---------------- LOOPERS ----------------
+function loopScreamer(screamer, slider) {
+    function loop() {
+        const intensity = slider.value;
+        if (intensity > 0) screamer(intensity);
+
+        const delay = Math.max(80, 600 - intensity * 50);
+        setTimeout(loop, delay);
+    }
+    loop();
+}
+
+loopScreamer(scream1, document.getElementById("s1"));
+loopScreamer(scream2, document.getElementById("s2"));
+loopScreamer(scream3, document.getElementById("s3"));
+loopScreamer(scream4, document.getElementById("s4"));
+</script>
+
+</body>
+</html>
