@@ -106,26 +106,7 @@ function removeImage(box) {
     }
 }
 
-// ----------------  SYNTH SONG ----------------
-const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-function playNote(freq, time, duration, type="sine", vol=0.2) {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = type;
-    osc.frequency.value = freq;
-
-    gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.exponentialRampToValueAtTime(vol, time + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start(time);
-    osc.stop(time + duration + 0.1);
-}
 
 // ---------------- FULL ORIGINAL BEATLES-STYLE SONG ----------------
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
