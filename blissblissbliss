@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Total Utter Bliss</title>
+
+<style>
+    body {
+        background: black;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    #flashText {
+        font-family: Arial, sans-serif;
+        font-size: 80px;
+        font-weight: bold;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.1s ease;
+    }
+</style>
+</head>
+<body>
+
+<div id="flashText">TOTAL UTTER BLISS</div>
+
+<script>
+let flashes = 0;
+const text = document.getElementById("flashText");
+
+function doFlash() {
+    flashes++;
+
+    // fade in
+    text.style.opacity = 1;
+
+    // fade out shortly after
+    setTimeout(() => {
+        text.style.opacity = 0;
+    }, 150);
+
+    // after 4 flashes → redirect
+    if (flashes >= 4) {
+        setTimeout(() => {
+            window.location.href = "sayingthings.html";
+        }, 300);
+    } else {
+        // schedule next flash
+        setTimeout(doFlash, 600);
+    }
+}
+
+// start flashing immediately
+doFlash();
+</script>
+
+</body>
+</html>
